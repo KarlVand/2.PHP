@@ -14,32 +14,30 @@
   <body>
 
     <header>
-      <h1>Nicaragua</h1>
+      <h1>Brasil</h1>
       <p><?php echo date('h:i:s A');?></p>
     </header>
+
     <main>
-      <form method="POST" action="convert.php">
-      <div value="NIO" name="to_currency">
-        <label for="input">Nic. Cordobas</label>
-      </div>
-      <input type="number" name="amount" placeholder="0.0">
-     
-      <p>to your tourist currency</p>
-      <select name="from_currency">
-        <option value="USD">USD</option>
-        <option value="EUR">EUR</option>
+
+      <form method="POST" action="convert.php" target="result_frame">
+      
+      <input type="text" name="amount" placeholder="0.0">
+      <p>Your tourist currency</p>
+      <select name="other_currency">
+        <option value='EUR'>EUR</option>
         <option value="GBP">GBP</option>
-    </select>
-   
-   
-    <button type="submit">Submit</button>
-    <br>
-    <br>
-    <output name="result" for="amount"></output>
+        <option value="USD">USD</option>
+      </select>
+     
+      <input type="hidden" name="mode" value="from_brl">
+      <input type="submit" name="convert" value="Convert">
+      <br>
+      <br>
+      <iframe src="convert.php" width="100%" name="result_frame" title="Result" for="amount"></iframe>
 
-        
+     </form>
 
-      </form>
     </main>
 
   </body>

@@ -1,47 +1,68 @@
 <?php
+$dsn = "mysql:host=localhost;dbname=testdb;charset=utf8mb4";
+$username = "your_username";
+$password = "your_password";
 
-function get_currency_rate($from, $to) {
-    /* $apiKey= 'fca_live_wo99nawoa2YYx9O40cuY8AGHb3AylJgFJ8gZnUnb'; */
+try {
+    $pdo = new PDO($dsn, $username, $password);
+    // Set error mode to exception
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    echo "Connected successfully";
+} catch(PDOException $e) {
+    echo "Connection failed: " . $e->getMessage();
+}
+
+function getCurrencyRates($base = "BRL") {
+    
+    $_SERVER['REQUEST_METHOD'] === 'GET';
     $url = "https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_wo99nawoa2YYx9O40cuY8AGHb3AylJgFJ8gZnUnb";
+    $curl = curl_init($url);
+    $resp = curl_exec($curl);
+    var_dump($resp);
+    
     $response = file_get_contents($url);
     $data = json_decode($response, true);
     
-    return $data["{$from}¸{$to}"] ?? null;
-}
+    $targetCurrencies = ["EUR", "GBP", "USD"];
+    $currency = "BRL";
+    $pairs = [];
+        foreach ($targetCurrencies as $currency) {
+    $pairs[] = $base . '_' . $currency;
+    }
+    $pairsString = implode(',', $pairs);
 
-
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $amount = $_POST["amount"];
-    $from = $_POST['from_currency'];
-    $to = $_GET['to_currency'];
-    
-    $rate = get_currency_rate($from, $to);
-    $result = $amount * $rate;
-    
-    echo "{$amount} {$from} = {$result} {$to}";
-}
-
-$rate = get_currency_rate('USD', 'EUR', 'GBP', 'NIO');
-echo $rate;
-
-
-/* if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $from_currency = $_POST["from_currency"];
-    $to_currency = $_POST["to_currency"];
-    $amount = $_POST["amount"];
-    
-    // Define exchange rates (you should use real-time rates in a production environment)
-    $rates = [
-        "USD" => 0.03,
-        "EUR" => 0.02,
-        "GBP" => 0.02,
-        "NIO"=> 1
+    return [
+        'EUR' => $data["{$base}_EUR"],
+        'GBP' => $data["{$base}_GBP"],
+        'USD' => $data["{$base}_USD"]
     ];
+}
+
+
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['convert'])) {
+    $amount = floatval($_POST["amount"]);
+    $other_currency = $_POST["other_currency"];
+    $mode = $_POST["mode"];
     
-    // Perform conversion
-    $result = $amount * ($rates[$to_currency] / $rates[$from_currency]);
+    $rates = getCurrencyRates('BRL');
+    if ($mode === 'from_brl') {
+        $result = $amount * $rates[$other_currency];
+        echo "{$amount} BRL = {$result} {$other_currency}";
+    } else {
+        $result = $amount / $rates[$other_currency];
+        echo "{$amount} {$other_currency} = {$result} BRL";
+    }
     
-    echo "$amount $from_currency = " . number_format($result, 2) . " $to_currency";
-} */
+    // Display all rates
+    
+    "<br><br>Current rates (1 BRL):<br>";
+    foreach ($rates as $currency => $rate) {
+        echo "1 BRL = {$rate} {$currency}<br>";
+    }
+
+}
+
+
+
 
